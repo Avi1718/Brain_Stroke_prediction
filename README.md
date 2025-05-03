@@ -28,10 +28,3 @@ The form takes the following inputs:
 - `bmi` (e.g., 28.3)
 - `smoking_status` (0 = never, 1 = formerly, 2 = smokes)
 
-## 🛠️ Installation & Running Locally
-
-1. **Clone the repository**
-
-```bash
-git clone https://github.com/your-username/stroke-predictor.git
-cd stroke-predictor
