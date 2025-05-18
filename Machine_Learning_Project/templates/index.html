@@ -1,0 +1,379 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Brain Stroke Predictor</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        :root {
+            --primary-color: #2c3e50;
+            --secondary-color: #3498db;
+            --success-color: #2ecc71;
+            --danger-color: #e74c3c;
+            --light-bg: #f8f9fa;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #f5f7fa 0%, #e4e8eb 100%);
+            min-height: 100vh;
+            padding: 2rem 0;
+        }
+
+        .container {
+            max-width: 900px;
+        }
+
+        .card {
+            border: none;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            background: white;
+            overflow: hidden;
+        }
+
+        .card-header {
+            background: var(--primary-color);
+            color: white;
+            padding: 1.5rem;
+            text-align: center;
+            position: relative;
+        }
+
+        .card-header h2 {
+            margin: 0;
+            font-size: 2rem;
+            font-weight: 600;
+        }
+
+        .header-icon {
+            font-size: 2.5rem;
+            margin-bottom: 1rem;
+            color: var(--secondary-color);
+        }
+
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        .form-label {
+            font-weight: 500;
+            color: var(--primary-color);
+            margin-bottom: 0.5rem;
+        }
+
+        .form-control {
+            border-radius: 8px;
+            padding: 0.75rem 1rem;
+            border: 2px solid #e9ecef;
+            transition: all 0.3s ease;
+        }
+
+        .form-control:focus {
+            border-color: var(--secondary-color);
+            box-shadow: 0 0 0 0.2rem rgba(52, 152, 219, 0.25);
+        }
+
+        .form-select {
+            border-radius: 8px;
+            padding: 0.75rem 1rem;
+            border: 2px solid #e9ecef;
+        }
+
+        .btn-predict {
+            background: var(--secondary-color);
+            color: white;
+            padding: 1rem 2rem;
+            border-radius: 8px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            transition: all 0.3s ease;
+            width: 100%;
+            margin-top: 1rem;
+        }
+
+        .btn-predict:hover {
+            background: #2980b9;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(52, 152, 219, 0.3);
+        }
+
+        .result-container {
+            margin-top: 2rem;
+            padding: 1.5rem;
+            border-radius: 10px;
+            text-align: center;
+            display: none;
+        }
+
+        .result-container.show {
+            display: block;
+            animation: fadeIn 0.5s ease;
+        }
+
+        .stroke-detected {
+            background-color: #fee2e2;
+            border: 2px solid var(--danger-color);
+        }
+
+        .no-stroke {
+            background-color: #dcfce7;
+            border: 2px solid var(--success-color);
+        }
+
+        .loading {
+            display: none;
+            text-align: center;
+            margin: 2rem 0;
+        }
+
+        .loading-spinner {
+            width: 3rem;
+            height: 3rem;
+        }
+
+        .info-icon {
+            color: var(--secondary-color);
+            margin-left: 0.5rem;
+            cursor: help;
+        }
+
+        .tooltip-inner {
+            max-width: 200px;
+            padding: 0.5rem 1rem;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .form-section {
+            background: var(--light-bg);
+            padding: 1.5rem;
+            border-radius: 10px;
+            margin-bottom: 1.5rem;
+        }
+
+        .section-title {
+            color: var(--primary-color);
+            font-size: 1.2rem;
+            font-weight: 600;
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+        }
+
+        .section-title i {
+            margin-right: 0.5rem;
+            color: var(--secondary-color);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="card">
+            <div class="card-header">
+                <i class="fas fa-brain header-icon"></i>
+                <h2>Brain Stroke Risk Assessment</h2>
+                <p class="mb-0">Enter patient information to assess stroke risk</p>
+            </div>
+            <div class="card-body p-4">
+                <form action="/predict" method="post" id="predictionForm">
+                    <div class="form-section">
+                        <div class="section-title">
+                            <i class="fas fa-user"></i>
+                            Personal Information
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label class="form-label" for="gender">
+                                        Gender
+                                        <i class="fas fa-info-circle info-icon" data-bs-toggle="tooltip" title="Select patient's gender (0: Male, 1: Female)"></i>
+                                    </label>
+                                    <select class="form-select" name="gender" id="gender" required>
+                                        <option value="">Select Gender</option>
+                                        <option value="0">Male</option>
+                                        <option value="1">Female</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label class="form-label" for="age_band">
+                                        Age Band
+                                        <i class="fas fa-info-circle info-icon" data-bs-toggle="tooltip" title="Select patient's age group (0: 0-20, 1: 21-40, 2: 41-60, 3: 61-80, 4: 80+)"></i>
+                                    </label>
+                                    <select class="form-select" name="age_band" id="age_band" required>
+                                        <option value="">Select Age Band</option>
+                                        <option value="0">0-20 years</option>
+                                        <option value="1">21-40 years</option>
+                                        <option value="2">41-60 years</option>
+                                        <option value="3">61-80 years</option>
+                                        <option value="4">80+ years</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-section">
+                        <div class="section-title">
+                            <i class="fas fa-heartbeat"></i>
+                            Medical History
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label class="form-label" for="hypertension">
+                                        Hypertension
+                                        <i class="fas fa-info-circle info-icon" data-bs-toggle="tooltip" title="Does the patient have hypertension? (0: No, 1: Yes)"></i>
+                                    </label>
+                                    <select class="form-select" name="hypertension" id="hypertension" required>
+                                        <option value="">Select Option</option>
+                                        <option value="0">No</option>
+                                        <option value="1">Yes</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label class="form-label" for="heart_disease">
+                                        Heart Disease
+                                        <i class="fas fa-info-circle info-icon" data-bs-toggle="tooltip" title="Does the patient have heart disease? (0: No, 1: Yes)"></i>
+                                    </label>
+                                    <select class="form-select" name="heart_disease" id="heart_disease" required>
+                                        <option value="">Select Option</option>
+                                        <option value="0">No</option>
+                                        <option value="1">Yes</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-section">
+                        <div class="section-title">
+                            <i class="fas fa-chart-line"></i>
+                            Health Metrics
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label class="form-label" for="avg_glucose_level">
+                                        Average Glucose Level
+                                        <i class="fas fa-info-circle info-icon" data-bs-toggle="tooltip" title="Enter glucose level in mg/dL (normal range: 70-140 mg/dL)"></i>
+                                    </label>
+                                    <input type="number" class="form-control" name="avg_glucose_level" id="avg_glucose_level" 
+                                           min="40" max="300" step="0.1" required>
+                                    <small class="form-text text-muted">Enter value in mg/dL (typical range: 70-140 mg/dL)</small>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label class="form-label" for="bmi">
+                                        BMI
+                                        <i class="fas fa-info-circle info-icon" data-bs-toggle="tooltip" title="Enter BMI in kg/m² (normal range: 18.5-24.9 kg/m²)"></i>
+                                    </label>
+                                    <input type="number" class="form-control" name="bmi" id="bmi" 
+                                           min="10" max="50" step="0.1" required>
+                                    <small class="form-text text-muted">Enter value in kg/m² (normal range: 18.5-24.9 kg/m²)</small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-section">
+                        <div class="section-title">
+                            <i class="fas fa-smoking"></i>
+                            Lifestyle Information
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label" for="smoking_status">
+                                Smoking Status
+                                <i class="fas fa-info-circle info-icon" data-bs-toggle="tooltip" title="Patient's smoking status (0: Formerly Smoked, 1: Never Smoked, 2: Currently Smokes, 3: Unknown)"></i>
+                            </label>
+                            <select class="form-select" name="smoking_status" id="smoking_status" required>
+                                <option value="">Select Smoking Status</option>
+                                <option value="0">Formerly Smoked</option>
+                                <option value="1">Never Smoked</option>
+                                <option value="2">Currently Smokes</option>
+                                <option value="3">Unknown</option>
+                            </select>
+                            <small class="form-text text-muted">0: Formerly Smoked, 1: Never Smoked, 2: Currently Smokes, 3: Unknown</small>
+                        </div>
+                    </div>
+
+                    <button type="submit" class="btn btn-predict">
+                        <i class="fas fa-calculator me-2"></i>Calculate Stroke Risk
+                    </button>
+                </form>
+
+                <div class="loading">
+                    <div class="spinner-border loading-spinner text-primary" role="status">
+                        <span class="visually-hidden">Loading...</span>
+                    </div>
+                    <p class="mt-2">Analyzing patient data...</p>
+                </div>
+
+                {% if prediction_text %}
+                <div class="result-container {% if 'Detected' in prediction_text %}stroke-detected{% else %}no-stroke{% endif %} show">
+                    <i class="fas {% if 'Detected' in prediction_text %}fa-exclamation-triangle text-danger{% else %}fa-check-circle text-success{% endif %} fa-3x mb-3"></i>
+                    <h3 class="mb-2">{{ prediction_text }}</h3>
+                    {% if probability_text %}
+                    <p class="mb-3 {% if 'Detected' in prediction_text %}text-danger{% else %}text-success{% endif %}">
+                        {{ probability_text }}
+                    </p>
+                    {% endif %}
+                    {% if 'Detected' in prediction_text %}
+                    <p class="text-danger mb-0">Please consult a healthcare professional immediately.</p>
+                    {% else %}
+                    <p class="text-success mb-0">Continue maintaining a healthy lifestyle.</p>
+                    {% endif %}
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Initialize tooltips
+        var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'))
+        var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+            return new bootstrap.Tooltip(tooltipTriggerEl)
+        })
+
+        // Form submission handling
+        document.getElementById('predictionForm').addEventListener('submit', function(e) {
+            document.querySelector('.loading').style.display = 'block';
+            document.querySelector('.result-container').classList.remove('show');
+        });
+
+        // Input validation for number fields
+        document.querySelectorAll('input[type="number"]').forEach(input => {
+            // Remove any default value
+            input.value = '';
+            
+            // Add validation on blur (when input loses focus)
+            input.addEventListener('blur', function() {
+                const value = parseFloat(this.value);
+                const min = parseFloat(this.min);
+                const max = parseFloat(this.max);
+                
+                if (isNaN(value)) {
+                    this.value = '';
+                } else if (value < min) {
+                    this.value = min;
+                } else if (value > max) {
+                    this.value = max;
+                }
+            });
+        });
+    </script>
+</body>
+</html>
